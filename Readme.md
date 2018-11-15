@@ -1,3 +1,8 @@
+<!-- default file list -->
+*Files to look at*:
+
+* [Form1.cs](./CS/RichEditOpenInOutlook/Form1.cs) (VB: [Form1.vb](./VB/RichEditOpenInOutlook/Form1.vb))
+<!-- default file list end -->
 # How to export the RichEditControl document into an Outlook mail item
 
 
