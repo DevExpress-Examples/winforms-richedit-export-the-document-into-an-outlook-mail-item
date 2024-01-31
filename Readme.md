@@ -14,9 +14,8 @@ In some scenarios, you might wish just to transfer the RichEditControl document 
 
 Refer to the following web articles to learn how to deal with the Outlook-related part of this solution:
 
-* [how to embed image in html body in c# into outlook mail](https://social.msdn.microsoft.com/Forums/en-US/6c063b27-7e8a-4963-ad5f-ce7e5ffb2c64/how-to-embed-image-in-html-body-in-c-into-outlook-mail?forum=vsto)
-* [Attach stream data with Outlook mail client](https://social.msdn.microsoft.com/Forums/en-US/17efe46b-18fe-450f-9f6e-d8bb116161d8/attach-stream-data-with-outlook-mail-client?forum=outlookdev)
-* [How to embed images in email](http://stackoverflow.com/questions/4312687/how-to-embed-images-in-email)
+* [How to embed image in HTML body in c# into Outlook mail](https://learn.microsoft.com/en-us/archive/msdn-technet-forums/6c063b27-7e8a-4963-ad5f-ce7e5ffb2c64)
+* [How to embed images in email](https://stackoverflow.com/questions/4312687/how-to-embed-images-in-email)
 
 ## Files to Review
 
