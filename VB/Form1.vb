@@ -73,7 +73,7 @@ Namespace RichEditOpenInOutlook
                 End If
             End Sub
 
-'#Region "IUriProvider Members"
+#Region "IUriProvider Members"
             Public Function CreateCssUri(ByVal rootUri As String, ByVal styleText As String, ByVal relativeUri As String) As String Implements IUriProvider.CreateCssUri
                 Return String.Empty
             End Function
@@ -86,7 +86,7 @@ Namespace RichEditOpenInOutlook
                 mailItem.Attachments.Add(imagePath, Outlook.OlAttachmentType.olByValue, 0, Type.Missing)
                 Return "cid:" & imageName
             End Function
-'#End Region
+#End Region
         End Class
     End Class
 End Namespace

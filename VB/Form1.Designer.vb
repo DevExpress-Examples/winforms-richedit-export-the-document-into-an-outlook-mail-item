@@ -19,7 +19,7 @@ Namespace RichEditOpenInOutlook
             MyBase.Dispose(disposing)
         End Sub
 
-'#Region "Windows Form Designer generated code"
+#Region "Windows Form Designer generated code"
         ''' <summary>
         ''' Required method for Designer support - do not modify
         ''' the contents of this method with the code editor.
@@ -120,7 +120,7 @@ Namespace RichEditOpenInOutlook
 
         Private richEdit As DevExpress.XtraRichEdit.RichEditControl
 
-'#End Region
+#End Region
         Private btnSend As System.Windows.Forms.Button
 
         Private lblSubject As System.Windows.Forms.Label
