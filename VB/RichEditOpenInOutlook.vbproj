@@ -105,7 +105,6 @@
     <Reference Include="DevExpress.XtraRichEdit.v24.2, Version=24.2.15.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Form1.vb">
