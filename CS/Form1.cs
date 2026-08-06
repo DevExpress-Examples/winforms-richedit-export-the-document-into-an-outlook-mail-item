@@ -1,53 +1,83 @@
-using System;
-using System.IO;
-using System.Text;
-using System.Windows.Forms;
-using System.Drawing.Imaging;
+using DevExpress.Office.Services;
+using DevExpress.Office.Utils;
 using DevExpress.Utils;
 using DevExpress.XtraRichEdit;
 using DevExpress.XtraRichEdit.Export;
-using DevExpress.XtraRichEdit.Utils;
-using DevExpress.Office.Utils;
-using DevExpress.Office.Services;
-using Outlook = Microsoft.Office.Interop.Outlook;
+using System;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Reflection;
+using System.Text;
+using System.Windows.Forms;
 
-namespace RichEditOpenInOutlook {
-    public partial class Form1 : Form {
-        public Form1() {
+namespace RichEditOpenInOutlook
+{
+    public partial class Form1 : Form
+    {
+        public Form1()
+        {
             InitializeComponent();
 
             richEdit.LoadDocument("Hello.docx");
         }
 
-        private void btnSend_Click(object sender, EventArgs e) {
-            if ((edtTo.Text.Trim() == "") || (edtSubject.Text.Trim() == "")) {
+        private void btnSend_Click(object sender, EventArgs e)
+        {
+            if ((edtTo.Text.Trim() == "") || (edtSubject.Text.Trim() == ""))
+            {
                 MessageBox.Show("Fill in required fields");
                 return;
             }
-            try {
-                Outlook.Application application = new Outlook.Application();
-                Outlook.MailItem mailItem = (Outlook.MailItem)application.CreateItem(Outlook.OlItemType.olMailItem);
+            try
+            {
+                Type outlookType = Type.GetTypeFromProgID("Outlook.Application");
+                if (outlookType == null)
+                {
+                    MessageBox.Show("Microsoft Outlook is not installed.");
+                    return;
+                }
 
-                mailItem.To = edtTo.Text;
-                mailItem.Subject = edtSubject.Text;
+                object application = Activator.CreateInstance(outlookType);
+                object mailItem = InvokeMethod(application, "CreateItem", 0);
+
+                SetProperty(mailItem, "To", edtTo.Text);
+                SetProperty(mailItem, "Subject", edtSubject.Text);
 
                 RichEditMailMessageExporter exporter = new RichEditMailMessageExporter(richEdit, mailItem);
                 exporter.Export();
 
-                mailItem.Display(false);
+                InvokeMethod(mailItem, "Display", false);
             }
-            catch (Exception exc) {
+            catch (Exception exc)
+            {
                 MessageBox.Show(exc.Message);
             }
         }
 
-        public class RichEditMailMessageExporter : IUriProvider {
+        static object InvokeMethod(object target, string methodName, params object[] args)
+        {
+            return target.GetType().InvokeMember(methodName, BindingFlags.InvokeMethod, null, target, args);
+        }
+
+        static object GetProperty(object target, string propertyName)
+        {
+            return target.GetType().InvokeMember(propertyName, BindingFlags.GetProperty, null, target, null);
+        }
+
+        static void SetProperty(object target, string propertyName, object value)
+        {
+            target.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, null, target, new[] { value });
+        }
+
+        public class RichEditMailMessageExporter : IUriProvider
+        {
             readonly RichEditControl control;
-            readonly Outlook.MailItem mailItem;
+            readonly object mailItem;
             int imageId;
             string tempFiles = Path.Combine(Directory.GetCurrentDirectory(), "TempFiles");
 
-            public RichEditMailMessageExporter(RichEditControl control, Outlook.MailItem mailItem) {
+            public RichEditMailMessageExporter(RichEditControl control, object mailItem)
+            {
                 Guard.ArgumentNotNull(control, "control");
                 Guard.ArgumentNotNull(mailItem, "mailItem");
 
@@ -55,31 +85,36 @@ namespace RichEditOpenInOutlook {
                 this.mailItem = mailItem;
             }
 
-            public virtual void Export() {
+            public virtual void Export()
+            {
                 if (!Directory.Exists(tempFiles))
                     Directory.CreateDirectory(tempFiles);
-                
+
                 control.BeforeExport += OnBeforeExport;
                 string htmlBody = control.Document.GetHtmlText(control.Document.Range, this);
                 control.BeforeExport -= OnBeforeExport;
-                
-                mailItem.BodyFormat = Outlook.OlBodyFormat.olFormatHTML;
-                mailItem.HTMLBody = htmlBody;
+
+                SetProperty(mailItem, "BodyFormat", 2);
+                SetProperty(mailItem, "HTMLBody", htmlBody);
             }
 
-            private void OnBeforeExport(object sender, BeforeExportEventArgs e) {
+            private void OnBeforeExport(object sender, BeforeExportEventArgs e)
+            {
                 HtmlDocumentExporterOptions options = e.Options as HtmlDocumentExporterOptions;
-                if (options != null) {
+                if (options != null)
+                {
                     options.Encoding = Encoding.UTF8;
                 }
             }
 
             #region IUriProvider Members
-            public string CreateCssUri(string rootUri, string styleText, string relativeUri) {
+            public string CreateCssUri(string rootUri, string styleText, string relativeUri)
+            {
                 return String.Empty;
             }
 
-            public string CreateImageUri(string rootUri, OfficeImage image, string relativeUri) {
+            public string CreateImageUri(string rootUri, OfficeImage image, string relativeUri)
+            {
                 string imageName = String.Format("image{0}.png", imageId);
                 imageId++;
 
@@ -87,7 +122,8 @@ namespace RichEditOpenInOutlook {
 
                 image.NativeImage.Save(imagePath, ImageFormat.Png);
 
-                mailItem.Attachments.Add(imagePath, Outlook.OlAttachmentType.olByValue, 0, Type.Missing);
+                object attachments = GetProperty(mailItem, "Attachments");
+                InvokeMethod(attachments, "Add", imagePath, 1, 0, Type.Missing);
 
                 return "cid:" + imageName;
             }

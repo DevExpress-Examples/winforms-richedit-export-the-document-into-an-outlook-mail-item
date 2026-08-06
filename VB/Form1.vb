@@ -1,14 +1,14 @@
 Imports System
 Imports System.IO
+Imports System.Reflection
 Imports System.Text
 Imports System.Windows.Forms
 Imports System.Drawing.Imaging
+Imports DevExpress.Office.Services
+Imports DevExpress.Office.Utils
 Imports DevExpress.Utils
 Imports DevExpress.XtraRichEdit
 Imports DevExpress.XtraRichEdit.Export
-Imports DevExpress.Office.Utils
-Imports DevExpress.Office.Services
-Imports Outlook = Microsoft.Office.Interop.Outlook
 
 Namespace RichEditOpenInOutlook
 
@@ -27,16 +27,37 @@ Namespace RichEditOpenInOutlook
             End If
 
             Try
-                Dim application As Outlook.Application = New Outlook.Application()
-                Dim mailItem As Outlook.MailItem = CType(application.CreateItem(Outlook.OlItemType.olMailItem), Outlook.MailItem)
-                mailItem.To = edtTo.Text
-                mailItem.Subject = edtSubject.Text
+                Dim outlookType As Type = Type.GetTypeFromProgID("Outlook.Application")
+                If outlookType Is Nothing Then
+                    MessageBox.Show("Microsoft Outlook is not installed.")
+                    Return
+                End If
+
+                Dim application As Object = Activator.CreateInstance(outlookType)
+                Dim mailItem As Object = InvokeMethod(application, "CreateItem", 0)
+
+                SetProperty(mailItem, "To", edtTo.Text)
+                SetProperty(mailItem, "Subject", edtSubject.Text)
+
                 Dim exporter As RichEditMailMessageExporter = New RichEditMailMessageExporter(richEdit, mailItem)
                 exporter.Export()
-                mailItem.Display(False)
+
+                InvokeMethod(mailItem, "Display", False)
             Catch exc As Exception
                 MessageBox.Show(exc.Message)
             End Try
+        End Sub
+
+        Private Shared Function InvokeMethod(ByVal target As Object, ByVal methodName As String, ByVal ParamArray args As Object()) As Object
+            Return target.GetType().InvokeMember(methodName, BindingFlags.InvokeMethod, Nothing, target, args)
+        End Function
+
+        Private Shared Function GetProperty(ByVal target As Object, ByVal propertyName As String) As Object
+            Return target.GetType().InvokeMember(propertyName, BindingFlags.GetProperty, Nothing, target, Nothing)
+        End Function
+
+        Private Shared Sub SetProperty(ByVal target As Object, ByVal propertyName As String, ByVal value As Object)
+            target.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, Nothing, target, New Object() {value})
         End Sub
 
         Public Class RichEditMailMessageExporter
@@ -44,13 +65,13 @@ Namespace RichEditOpenInOutlook
 
             Private ReadOnly control As RichEditControl
 
-            Private ReadOnly mailItem As Outlook.MailItem
+            Private ReadOnly mailItem As Object
 
             Private imageId As Integer
 
             Private tempFiles As String = Path.Combine(Directory.GetCurrentDirectory(), "TempFiles")
 
-            Public Sub New(ByVal control As RichEditControl, ByVal mailItem As Outlook.MailItem)
+            Public Sub New(ByVal control As RichEditControl, ByVal mailItem As Object)
                 Guard.ArgumentNotNull(control, "control")
                 Guard.ArgumentNotNull(mailItem, "mailItem")
                 Me.control = control
@@ -62,8 +83,8 @@ Namespace RichEditOpenInOutlook
                 AddHandler control.BeforeExport, AddressOf OnBeforeExport
                 Dim htmlBody As String = control.Document.GetHtmlText(control.Document.Range, Me)
                 RemoveHandler control.BeforeExport, AddressOf OnBeforeExport
-                mailItem.BodyFormat = Outlook.OlBodyFormat.olFormatHTML
-                mailItem.HTMLBody = htmlBody
+                SetProperty(mailItem, "BodyFormat", 2)
+                SetProperty(mailItem, "HTMLBody", htmlBody)
             End Sub
 
             Private Sub OnBeforeExport(ByVal sender As Object, ByVal e As BeforeExportEventArgs)
@@ -83,7 +104,8 @@ Namespace RichEditOpenInOutlook
                 imageId += 1
                 Dim imagePath As String = Path.Combine(tempFiles, imageName)
                 image.NativeImage.Save(imagePath, ImageFormat.Png)
-                mailItem.Attachments.Add(imagePath, Outlook.OlAttachmentType.olByValue, 0, Type.Missing)
+                Dim attachments As Object = GetProperty(mailItem, "Attachments")
+                InvokeMethod(attachments, "Add", imagePath, 1, 0, Type.Missing)
                 Return "cid:" & imageName
             End Function
 #End Region

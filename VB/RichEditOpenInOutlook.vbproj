@@ -105,9 +105,7 @@
     <Reference Include="DevExpress.XtraRichEdit.v24.2, Version=24.2.15.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
     </Reference>
-    <Reference Include="Microsoft.Office.Interop.Outlook, Version=14.0.0.0, Culture=neutral, PublicKeyToken=71e9bce111e9429c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-    </Reference>
+
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Form1.vb">
