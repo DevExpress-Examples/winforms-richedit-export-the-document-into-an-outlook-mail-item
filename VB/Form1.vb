@@ -1,14 +1,14 @@
-Imports System
-Imports System.IO
-Imports System.Reflection
-Imports System.Text
-Imports System.Windows.Forms
-Imports System.Drawing.Imaging
 Imports DevExpress.Office.Services
 Imports DevExpress.Office.Utils
 Imports DevExpress.Utils
 Imports DevExpress.XtraRichEdit
 Imports DevExpress.XtraRichEdit.Export
+Imports System
+Imports System.Drawing.Imaging
+Imports System.IO
+Imports System.Reflection
+Imports System.Text
+Imports System.Windows.Forms
 
 Namespace RichEditOpenInOutlook
 
@@ -35,20 +35,17 @@ Namespace RichEditOpenInOutlook
 
                 Dim application As Object = Activator.CreateInstance(outlookType)
                 Dim mailItem As Object = InvokeMethod(application, "CreateItem", 0)
-
                 SetProperty(mailItem, "To", edtTo.Text)
                 SetProperty(mailItem, "Subject", edtSubject.Text)
-
                 Dim exporter As RichEditMailMessageExporter = New RichEditMailMessageExporter(richEdit, mailItem)
                 exporter.Export()
-
                 InvokeMethod(mailItem, "Display", False)
             Catch exc As Exception
                 MessageBox.Show(exc.Message)
             End Try
         End Sub
 
-        Private Shared Function InvokeMethod(ByVal target As Object, ByVal methodName As String, ByVal ParamArray args As Object()) As Object
+        Private Shared Function InvokeMethod(ByVal target As Object, ByVal methodName As String, ParamArray args As Object()) As Object
             Return target.GetType().InvokeMember(methodName, BindingFlags.InvokeMethod, Nothing, target, args)
         End Function
 
@@ -57,7 +54,7 @@ Namespace RichEditOpenInOutlook
         End Function
 
         Private Shared Sub SetProperty(ByVal target As Object, ByVal propertyName As String, ByVal value As Object)
-            target.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, Nothing, target, New Object() {value})
+            target.GetType().InvokeMember(propertyName, BindingFlags.SetProperty, Nothing, target, {value})
         End Sub
 
         Public Class RichEditMailMessageExporter
